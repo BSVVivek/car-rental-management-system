@@ -115,4 +115,4 @@ PLACE ADMIN DASHBOARD PAGE IMAGE HERE
 
 ## 📄 License
 
-This project is licensed under the [e.g., MIT License] - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
