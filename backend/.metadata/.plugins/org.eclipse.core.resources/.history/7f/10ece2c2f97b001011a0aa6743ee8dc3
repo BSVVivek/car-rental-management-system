@@ -1,0 +1,236 @@
+package com.cognizant.bootdemo;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.web.servlet.MockMvc;
+
+import com.cognizant.bootdemo.controller.VehicleController;
+import com.cognizant.bootdemo.models.dao.serviceImpl.VehicleServiceImpl;
+import com.cognizant.bootdemo.models.dao.services.VehicleService;
+import com.cognizant.bootdemo.models.pojo.Vehicle;
+import com.cognizant.bootdemo.models.repositories.VehicleRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+// This outer class is for context loading, as originally designed.
+@SpringBootTest
+class VehicleModuleDemoApplicationTests {
+
+	@Test
+	void contextLoads() {
+	}
+
+}
+
+// --- Nested Test Class for the Service Layer ---
+@ExtendWith(MockitoExtension.class)
+class VehicleServiceImplTest {
+
+    @Mock
+    private VehicleRepository vehicleRepository;
+
+    @InjectMocks
+    private VehicleServiceImpl vehicleService;
+
+    private Vehicle vehicle1;
+    private Vehicle vehicle2;
+
+    @BeforeEach
+    void setUp() {
+        vehicle1 = new Vehicle();
+        vehicle1.setVehicleID(101);
+        vehicle1.setVehicleName("Swift");
+        vehicle1.setBrand("Maruti");
+        vehicle1.setModel("ZXI Plus");
+        vehicle1.setDailyRate(2200);
+        vehicle1.setIsAvailable("Yes");
+
+        vehicle2 = new Vehicle();
+        vehicle2.setVehicleID(102);
+        vehicle2.setVehicleName("Seltos");
+        vehicle2.setBrand("Kia");
+        vehicle2.setModel("HTX IVT");
+        vehicle2.setDailyRate(3600);
+        vehicle2.setIsAvailable("Yes");
+    }
+
+    @Test
+    void testGetAllVehicles_ShouldReturnListOfVehicles() {
+        List<Vehicle> vehicleList = new ArrayList<>();
+        vehicleList.add(vehicle1);
+        vehicleList.add(vehicle2);
+        when(vehicleRepository.findAll()).thenReturn(vehicleList);
+
+        List<Vehicle> foundVehicles = vehicleService.getAllVehicles();
+
+        assertNotNull(foundVehicles);
+        assertEquals(2, foundVehicles.size());
+        assertEquals("Swift", foundVehicles.get(0).getVehicleName());
+        verify(vehicleRepository, times(1)).findAll();
+    }
+
+    @Test
+    void testAddVehicle_ShouldSaveAndReturnVehicle() {
+        when(vehicleRepository.save(any(Vehicle.class))).thenReturn(vehicle1);
+
+        Vehicle savedVehicle = vehicleService.addVehicle(vehicle1);
+
+        assertNotNull(savedVehicle);
+        assertEquals(101, savedVehicle.getVehicleID());
+        assertEquals("Maruti", savedVehicle.getBrand());
+        verify(vehicleRepository, times(1)).save(vehicle1);
+    }
+    
+    @Test
+    void testUpdateVehicle_WhenVehicleExists_ShouldUpdateAndReturnVehicle() {
+        Vehicle updatedDetails = new Vehicle();
+        updatedDetails.setDailyRate(2500);
+        
+        when(vehicleRepository.findById(101)).thenReturn(Optional.of(vehicle1));
+        when(vehicleRepository.save(any(Vehicle.class))).thenReturn(vehicle1);
+
+        Vehicle result = vehicleService.updateVehicle(101, updatedDetails);
+
+        assertNotNull(result);
+        assertEquals(2500, result.getDailyRate());
+        verify(vehicleRepository, times(1)).findById(101);
+        verify(vehicleRepository, times(1)).save(vehicle1);
+    }
+
+    @Test
+    void testUpdateVehicle_WhenVehicleDoesNotExist_ShouldThrowException() {
+        when(vehicleRepository.findById(999)).thenReturn(Optional.empty());
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            vehicleService.updateVehicle(999, new Vehicle());
+        });
+        
+        verify(vehicleRepository, times(1)).findById(999);
+        verify(vehicleRepository, times(0)).save(any(Vehicle.class));
+    }
+
+    @Test
+    void testRemoveVehicle_WhenVehicleExists_ShouldDeleteVehicle() {
+        when(vehicleRepository.findById(101)).thenReturn(Optional.of(vehicle1));
+        doNothing().when(vehicleRepository).delete(vehicle1);
+
+        vehicleService.removeVehicle(101);
+
+        verify(vehicleRepository, times(1)).findById(101);
+        verify(vehicleRepository, times(1)).delete(vehicle1);
+    }
+
+    @Test
+    void testRemoveVehicle_WhenVehicleDoesNotExist_ShouldThrowException() {
+        when(vehicleRepository.findById(999)).thenReturn(Optional.empty());
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            vehicleService.removeVehicle(999);
+        });
+
+        verify(vehicleRepository, times(1)).findById(999);
+        verify(vehicleRepository, times(0)).delete(any(Vehicle.class));
+    }
+}
+
+// --- Nested Test Class for the Controller Layer ---
+@WebMvcTest(VehicleController.class)
+@ExtendWith(SpringExtension.class)
+class VehicleControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockBean
+    private VehicleService vehicleService;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    private Vehicle vehicle1;
+    private Vehicle vehicle2;
+
+    @BeforeEach
+    void setUp() {
+        vehicle1 = new Vehicle();
+        vehicle1.setVehicleID(101);
+        vehicle1.setVehicleName("Swift");
+        vehicle1.setBrand("Maruti");
+        vehicle1.setDailyRate(2200);
+
+        vehicle2 = new Vehicle();
+        vehicle2.setVehicleID(102);
+        vehicle2.setVehicleName("Seltos");
+        vehicle2.setBrand("Kia");
+        vehicle2.setDailyRate(3600);
+    }
+
+    @Test
+    void testGetAllVehicles_ShouldReturnOkStatusAndVehicleList() throws Exception {
+        List<Vehicle> vehicleList = new ArrayList<>();
+        vehicleList.add(vehicle1);
+        vehicleList.add(vehicle2);
+        when(vehicleService.getAllVehicles()).thenReturn(vehicleList);
+
+        mockMvc.perform(get("/api/vehicles/all"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.size()").value(2))
+                .andExpect(jsonPath("$[0].vehicleName").value("Swift"));
+    }
+    
+    @Test
+    void testAddVehicle_ShouldReturnCreatedStatusAndVehicle() throws Exception {
+        when(vehicleService.addVehicle(any(Vehicle.class))).thenReturn(vehicle1);
+
+        mockMvc.perform(post("/api/vehicles/add")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(vehicle1)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.vehicleID").value(101));
+    }
+
+    @Test
+    void testUpdateVehicle_ShouldReturnOkStatusAndUpdatedVehicle() throws Exception {
+        when(vehicleService.updateVehicle(any(Integer.class), any(Vehicle.class))).thenReturn(vehicle1);
+
+        mockMvc.perform(put("/api/vehicles/update/{id}", 101)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(vehicle1)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.brand").value("Maruti"));
+    }
+
+    @Test
+    void testRemoveVehicle_ShouldReturnNoContentStatus() throws Exception {
+        doNothing().when(vehicleService).removeVehicle(101);
+
+        mockMvc.perform(delete("/api/vehicles/remove/{id}", 101))
+                .andExpect(status().isNoContent());
+    }
+}
