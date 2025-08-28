@@ -97,19 +97,27 @@ PLACE ER DIAGRAM IMAGE HERE
 Here are some visual representations of the Car Rental Management System in action:
 
 **1. Login / Registration Page**
-PLACE LOGIN PAGE IMAGE HERE
+<img width="1918" height="1017" alt="image" src="https://github.com/user-attachments/assets/0871b4c0-f7c8-40c7-a312-a0760e0bcabf" />
+
 
 **2. User Dashboard / Home Page**
-PLACE USER PAGE IMAGE HERE
+<img width="1919" height="1016" alt="image" src="https://github.com/user-attachments/assets/b1a67438-9ce2-4a63-8c13-e8c16f02302f" />
+
 
 **3. Car Listing Page**
-PLACE CAR LISTING PAGE IMAGE HERE
+<img width="1919" height="1017" alt="image" src="https://github.com/user-attachments/assets/4f4668bd-f3d8-4ab5-b94f-44eb24c5bf58" />
+
 
 **4. Booking Confirmation Page**
-PLACE BOOKING CONFIRMATION PAGE HERE
+<img width="1919" height="1010" alt="image" src="https://github.com/user-attachments/assets/4f7252c1-8711-4cd2-9e78-ae0a5862ffca" />
+<img width="1919" height="1020" alt="image" src="https://github.com/user-attachments/assets/75ff9d26-f414-47be-a9eb-f06225783ec2" />
+
 
 **5. Admin Dashboard**
-PLACE ADMIN DASHBOARD PAGE IMAGE HERE
+<img width="1919" height="1020" alt="image" src="https://github.com/user-attachments/assets/261858eb-34a0-4c78-9798-ff3f6cf0dee9" />
+<img width="1919" height="885" alt="image" src="https://github.com/user-attachments/assets/87ab7c71-e026-4862-8d0b-ff85ef132efb" />
+<img width="1919" height="1023" alt="image" src="https://github.com/user-attachments/assets/a9a7cf4b-ebfd-4c3e-907f-8aa0ad4a9dd9" />
+
 
 ---
 
